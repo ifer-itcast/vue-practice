@@ -420,3 +420,55 @@ addUser() {
 }
 ```
 
+- 修改用户
+
+根据 ID 查询用户信息，并填充到修改表单中
+
+```javascript
+this.$refs.editFormRef.validate(async valid => {
+    if(!valid) return this.$message.error('验证不通过');
+    const {data: res} = await this.$http.put('users/' + this.editForm.id, {
+        emai: this.editForm.email,
+        mobile: this.editForm.mobile
+    });
+
+    if(res.meta.status !== 200) {
+        return this.$message.error('更新用户信息失败');
+    }
+
+    // 关闭对话框
+    this.editDialogVisible = false;
+    // 更新数据
+    this.getUserList();
+    // 提示修改成功
+    this.$message.success('更新用户信息成功');
+});
+```
+
+- 删除用户
+
+```javascript
+// 不需要 Vue.use(MessageBox)
+Vue.prototype.$confirm = MessageBox.confirm
+```
+
+```javascript
+async removeUserById(id) {
+    const confirmRes = await this.$confirm('此操作将永久删除该用户，是否继续？','提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).catch(err => err);
+    if(confirmRes !== 'confirm') {
+        return this.$message.info('取消删除');
+    }
+    // 删除接口
+    const {data: res} = await this.$http.delete('users/'+id)
+    if(res.meta.status !== 200) {
+        return this.$message.error('删除用户失败！');
+    }
+    this.$message.success('删除用户成功');
+    this.getUserList();
+}
+```
+
