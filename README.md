@@ -201,3 +201,222 @@ module.exports = {
     },
 }
 ```
+
+## 侧边栏
+
+### axios 拦截器添加 token
+
+通过接口获取列表数据，需要授权的 API，必修在请求头中使用 Authorization 字段提供 token 令牌
+
+```javascript
+axios.interceptors.request.use(config => {
+    // 为请求头对象添加 Token 验证的 Authorization
+    config.headers.Authorization = window.sessionStorage.getItem('token');
+    return config;
+});
+```
+
+```javascript
+// 注意这样是对 POST 请求发送的数据进行转换的操作
+axios.defaults.transformRequest = [function(data, headers) {
+    const arr = [];
+    for(let attr in data) {
+        arr.push(`${attr}=${data[attr]}`); // ['name=ifer', 'age=18']
+    }
+    return arr.join('&');
+}];
+```
+
+### 请求菜单栏列表数据
+
+```javascript
+async getMenuList() {
+    const {data: res} = await this.$http.get('menus');
+    if(res.meta.status !== 200) return this.$message.error(res.meta.msg);
+    this.menuList = res.data;
+}
+```
+
+## 首页
+
+Home 组件的右侧用到了 <router-view></router-view> 进行占位，首页是 Welcome 组件
+
+### 配置路由
+
+```javascript
+const router = new Router({
+    routes: [
+        {
+            path: '/home',
+            component: Home,
+            redirect: '/welcome',
+            // 设置子路由能保证显示welcome的时候也出现home
+            children: [
+                {
+                    path: '/welcome',
+                    component: Welcome
+                },
+                {
+                    path: '/users',
+                    component: Users
+                }
+            ]
+        }
+    ]
+})
+```
+
+### 启用 el-menu 的路由功能
+
+会以 el-menu-item 的 index 值作为跳转路径
+
+```javascript
+<el-menu :router="true"></el-menu>
+// 或
+<el-menu router></el-menu>
+```
+
+```javascript
+<el-menu-item :index="'/'+subItem.path"></el-menu-item>
+```
+
+## 用户列表
+
+- 点击高亮二级列表，并且刷新时保存状态
+
+```javascript
+saveNavState(activePath) {
+    window.sessionStorage.setItem('activePath',activePath);
+    this.activePath = activePath;
+}
+```
+
+```javascript
+<el-menu :default-active="activePath"></el-menu>
+```
+
+```javascript
+// 在 created 钩子里面再进行初始化
+created() {
+    this.activePath = window.sessionStorage.getItem('activePath');
+}
+```
+
+- 获取用户列表数据
+
+```javascript
+async getUserList() {
+    const { data: res } = await this.$http.get('users', {
+        params: this.queryInfo
+    });
+    console.log(res);
+    if (res.meta.status !== 200) return this.$message.error('获取用户列表失败');
+    this.userList = res.data.users;
+    this.total = res.data.total;
+}
+```
+
+```javascript
+<el-table :data="userlist"></el-table>
+```
+
+- 自定义状态列/操作列的效果
+
+```javascript
+// 插槽
+<el-table-column label="状态">
+    <template slot-scope="scope">
+        <el-switch @change="userStateChanged(scope.row)" v-model="scope.row.mg_state"></el-switch>
+    </template>
+</el-table-column>
+```
+
+```javascript
+<el-table-column label="操作">
+    <template width="180px">
+        <!-- 修改 -->
+        <el-button type="primary" size="mini" icon="el-icon-edit"></el-button>
+        <!-- 删除 -->
+        <el-button type="danger" size="mini" icon="el-icon-delete"></el-button>
+        <!-- 分配角色 -->
+        <el-tooltip content="分配角色" placement="top" :enterable="false">
+            <el-button type="warning" size="mini" icon="el-icon-setting"></el-button>
+        </el-tooltip>
+    </template>
+</el-table-column>
+```
+
+- 分页效果
+
+```javascript
+<el-pagination
+    :current-page="queryInfo.pagenum"
+    :page-sizes="[1, 2, 5, 10]"
+    @size-change="handleSizeChange" // 每页显示多少条的切换
+    :page-size="queryInfo.pagesize"
+    @current-change="handleCurrentChange" // 页面变化
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="total"
+></el-pagination>
+```
+
+- 用户状态的更改同步到后台
+
+```javascript
+async userStateChanged(userinfo) {
+    const { data: res } = await this.$http.put(`users/${userinfo.id}/state/${userinfo.mg_state}`);
+    if (res.meta.status !== 200) {
+        // 既然更新失败了，界面的状态也不需要变化
+        userinfo.mg_state = !userinfo.mg_state;
+        return this.$message.error('更新用户状态失败');
+    }
+    this.$message.success('更新用户状态成功');
+},
+```
+
+- 搜索用户列表
+
+- 添加用户
+
+```javascript
+<el-dialog></el-dialog>
+```
+
+```javascript
+// 自定义校验规则
+data() {
+    // 自定义验证邮箱的规则
+    let checkEmail = (rules, value, cb) => {
+        const regEmail = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/
+        if (regEmail.test(value)) {
+            // 合法的邮箱
+            return cb()
+        }
+        cb(new Error('请输入合法的邮箱'))
+    }
+    // 自定义验手机号的规则
+    let checkMobile = (rules, value, cb) => {
+        const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
+        if (regMobile.test(value)) {
+            return cb()
+        }
+        cb(new Error('请输入合法的手机号'))
+    }
+    return {};
+}
+```
+
+```javascript
+// 关闭对话框时初始化弹框数据，保证下次打开时还是默认状态
+this.$refs.addFormRef.resetFields();
+```
+
+```javascript
+// 添加用户前同样要进行数据校验的工作
+addUser() {
+    this.$refs.addFormRef.validate(async valid => {
+        if(!valid) return;
+    });
+}
+```
+
