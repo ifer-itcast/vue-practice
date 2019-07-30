@@ -509,3 +509,12 @@ async getRolesList() {
 - 分配权限
 
 - 用户列表的分配角色
+
+## 商品分类
+
+```javascript
+// 入口文件注册全局可用的组件
+Vue.component('tree-table', TreeTable)
+```
+
+<!-- 10 -->
