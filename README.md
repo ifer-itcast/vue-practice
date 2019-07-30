@@ -472,3 +472,40 @@ async removeUserById(id) {
 }
 ```
 
+## 权限列表
+
+- 获取权限列表数据
+
+```javascript
+async getRightsList() {
+    const {data: res} = await this.$http.get('rights/list')
+    if(res.meta.status !== 200) {
+        return this.$message.error('获取权限列表失败');
+    }
+    this.rightsList = res.data;
+}
+```
+
+**用户**分为不同的**角色**，不同的角色对应不同的**权限**
+
+## 角色列表
+
+- 获取数据
+
+```javascript
+async getRolesList() {
+  const {data: res} = await this.$http.get('roles');
+  if(res.meta.status !== 200) {
+    return this.$message.error('获取角色列表失败');
+  }
+  this.rolelist = res.data;
+}
+```
+
+- 删除权限
+
+- 权限列表
+
+- 分配权限
+
+- 用户列表的分配角色
