@@ -46,13 +46,42 @@
         </template>
       </tree-table>
       <!-- 分页 -->
-      <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="queryInfo.pagenum" :page-sizes="[3, 5, 10, 15]" :page-size="queryInfo.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total"></el-pagination>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-sizes="[3, 5, 10, 15]"
+        :page-size="queryInfo.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      ></el-pagination>
     </el-card>
     <!-- 添加分类对话框 -->
-    <el-dialog title="添加分类" :visible.sync="addCateDialogVisible" width="50%">
+    <el-dialog title="添加分类" :visible.sync="addCateDialogVisible" width="50%" @close="addCateDialogClosed">
+      <el-form
+        :model="addCateForm"
+        :rules="addCateFormRules"
+        ref="addCateFormRef"
+        label-width="100px"
+      >
+        <el-form-item label="分类名称：" prop="cat_name">
+          <el-input v-model="addCateForm.cat_name"></el-input>
+        </el-form-item>
+        <el-form-item label="父级分类：">
+          <el-cascader
+            expand-trigger="hover"
+            :options="parentCateList"
+            :props="cascaderProps"
+            v-model="selectedKeys"
+            @change="parentCateChanged"
+            clearable
+            change-on-select
+          ></el-cascader>
+        </el-form-item>
+      </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addCateDialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="addCateDialogVisible=false">确定</el-button>
+        <el-button type="primary" @click="addCate">确定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -94,7 +123,33 @@ export default {
         }
       ],
       // 添加分类对话框
-      addCateDialogVisible: false
+      addCateDialogVisible: false,
+      addCateForm: {
+        // 分类名称
+        cat_name: '',
+        // 父分类ID
+        cat_pid: 0,
+        // 0 代表一级分类
+        cat_level: 0
+      },
+      addCateFormRules: {
+        cat_name: [
+          {
+            required: true,
+            message: '请输入分类名称',
+            trigger: 'blur'
+          }
+        ]
+      },
+      // 父级分类列表
+      parentCateList: [],
+      cascaderProps: {
+        value: 'cat_id',
+        label: 'cat_name',
+        children: 'children'
+      },
+      // 选中的父级分类的ID
+      selectedKeys: []
     }
   },
   created() {
@@ -124,14 +179,62 @@ export default {
       this.getCateList()
     },
     showAddCatDialog() {
-      this.addCateDialogVisible=true;
+      // 获取父级分类数据
+      this.getParentCateList()
+      // 再展示对话框
+      this.addCateDialogVisible = true
+    },
+    // 获取父级分类数据列表
+    async getParentCateList() {
+      const { data: res } = await this.$http.get('categories', {
+        params: {
+          type: 2 // 前 2 级的
+        }
+      })
+      if (res.meta.status !== 200) {
+        return this.$messsage.error('获取父级分类数据失败')
+      }
+      this.parentCateList = res.data
+    },
+    parentCateChanged() {
+      // 证明选中了父级分类
+      if(this.selectedKeys.length>0) {
+        // 最后一项就是父分类
+        this.addCateForm.cat_pid = this.selectedKeys[this.selectedKeys.length-1];
+        this.addCateForm.cat_level = this.selectedKeys.length;
+        return;
+      } else {
+        this.addCateForm.cat_pid = 0;
+        this.addCateForm.cat_level = 0;
+      }
+    },
+    addCate() {
+      this.$refs.addCateFormRef.validate(async valid => {
+        if(!valid) return;
+        const {data: res} = await this.$http.post('categories', this.addCateForm);
+        if(res.meta.status !== 201) {
+          return this.$message.error('添加分类失败');
+        }
+        this.$message.success('添加分类成功');
+        this.getCateList();
+        this.addCateDialogVisible = false;
+      })
+    },
+    addCateDialogClosed() {
+      this.$refs.addCateFormRef.resetFields();
+      this.selectedKeys = [];
+      this.addCateForm.cat_level = 0;
+      this.addCateForm.cat_pid = 0;
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.treeTable{
+.treeTable {
   margin-top: 15px;
+}
+.el-cascader {
+  width: 100%;
 }
 </style>
