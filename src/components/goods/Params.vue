@@ -31,10 +31,24 @@
             :disabled="isBtnDisabled"
             @click="addDialogVisible=true"
           >添加参数</el-button>
-          <!-- 静态属性表格 -->
+          <!-- 动态参数表格 -->
           <el-table :data="manyTableData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag v-for="(item, i) in scope.row.attr_vals" :key="i" closable @close="handleClose(i, scope.row)">{{item}}</el-tag>
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                ></el-input>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column label="参数名称" prop="attr_name"></el-table-column>
@@ -55,7 +69,21 @@
           >添加属性</el-button>
           <el-table :data="onlyTableData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag v-for="(item, i) in scope.row.attr_vals" :key="i" closable @close="handleClose(i, scope.row)">{{item}}</el-tag>
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                ></el-input>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column label="属性名称" prop="attr_name"></el-table-column>
@@ -135,7 +163,7 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
     }
   },
   created() {
@@ -160,9 +188,11 @@ export default {
       // 选中的不是三级分类
       if (this.selectedCateKeys.length !== 3) {
         this.selectedCateKeys = []
+        // 先选的三级，再选二级把上次的数据也干掉，因为不允许二级
+        this.manyTableData = []
+        this.onlyTableData = []
         return
       }
-      console.log(this.cateId, 23)
       const { data: res } = await this.$http.get(
         `categories/${this.cateId}/attributes`,
         { params: { sel: this.activeName } }
@@ -170,7 +200,12 @@ export default {
       if (res.meta.status !== 200) {
         return this.$message.error('获取参数列表失败')
       }
-
+      res.data.forEach(item => {
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : [];
+        // 控制当前编辑文本框的显示与隐藏
+        item.inputVisible = false;
+        item.inputValue = '';
+      })
       if (this.activeName === 'many') {
         // 动态参数
         this.manyTableData = res.data
@@ -243,6 +278,42 @@ export default {
       }
       this.$message.success('删除成功');
       this.getParamsData();
+    },
+    async handleInputConfirm(row) {
+      if(row.inputValue.trim().length === 0) {
+        row.inputValue = '';
+        row.inputVisible = false;
+        return;
+      }
+      // 用户输入了真正的内容
+      row.attr_vals.push(row.inputValue.trim());
+      row.inputValue = '';
+      row.inputVisible = false;
+      // 把数据怼到数据库
+      this.saveAttrVals(row);
+    },
+    // 将对 attr_vals 的操作保存到数据库，例如删除
+    async saveAttrVals(row) {
+      const {data: res} = await this.$http.put(`categories/${this.cateId}/attributes/${row.attr_id}`, {
+        attr_name:row.attr_name,
+        attr_sel: row.attr_sel,
+        attr_vals: row.attr_vals.join(' ')
+      });
+      if(res.meta.status !== 200) {
+        return this.$message.error('修改参数失败');
+      }
+      this.$message.success('保存参数项成功');
+    },
+    showInput(row) {
+      row.inputVisible = true;
+      // 自动获取焦点
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    handleClose(i, row) {
+      row.attr_vals.splice(i, 1);
+      this.saveAttrVals(row);
     }
   },
   computed: {
@@ -276,6 +347,12 @@ export default {
 <style lang="less" scoped>
 .cat_opt {
   margin: 15px 0;
+}
+.el-tag{
+  margin: 10px;
+}
+.input-new-tag{
+  width: 120px;
 }
 </style>
 
