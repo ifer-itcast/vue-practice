@@ -7,6 +7,10 @@ import './assets/fonts/iconfont.css'
 // 全局样式
 import './assets/css/global.css'
 import TreeTable from 'vue-table-with-tree-grid'
+import VueQuillEditor from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 // 配置 axios
 import axios from 'axios'
 axios.interceptors.request.use(config => {
@@ -20,6 +24,8 @@ Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
 Vue.component('tree-table', TreeTable)
+// 注意这里是 Vue.use 而不是 Vue.component
+Vue.use(VueQuillEditor)
 
 Vue.filter('dateFormat', function (originValue) {
   const dt = new Date(originValue)
