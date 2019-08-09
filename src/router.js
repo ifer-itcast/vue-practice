@@ -9,7 +9,8 @@ import Roles from './components/power/Roles.vue'
 import Cate from './components/goods/Cate.vue'
 import Params from './components/goods/Params.vue'
 import GoodsList from './components/goods/List.vue'
-import Add from './components/goods/Add.vue';
+import Add from './components/goods/Add.vue'
+import Order from './components/order/Order.vue'
 
 Vue.use(Router)
 
@@ -60,6 +61,10 @@ const router = new Router({
         {
           path: '/goods/add',
           component: Add
+        },
+        {
+          path: '/orders',
+          component: Order
         }
       ]
     }
