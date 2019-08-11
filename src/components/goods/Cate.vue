@@ -40,7 +40,7 @@
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
         <!-- 操作 -->
-        <template slot="opt" slot-scope="scope">
+        <template slot="opt">
           <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
           <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
         </template>
@@ -198,33 +198,33 @@ export default {
     },
     parentCateChanged() {
       // 证明选中了父级分类
-      if(this.selectedKeys.length>0) {
+      if (this.selectedKeys.length > 0) {
         // 最后一项就是父分类
-        this.addCateForm.cat_pid = this.selectedKeys[this.selectedKeys.length-1];
-        this.addCateForm.cat_level = this.selectedKeys.length;
-        return;
+        this.addCateForm.cat_pid = this.selectedKeys[this.selectedKeys.length - 1]
+        this.addCateForm.cat_level = this.selectedKeys.length
+        return false
       } else {
-        this.addCateForm.cat_pid = 0;
-        this.addCateForm.cat_level = 0;
+        this.addCateForm.cat_pid = 0
+        this.addCateForm.cat_level = 0
       }
     },
     addCate() {
       this.$refs.addCateFormRef.validate(async valid => {
-        if(!valid) return;
-        const {data: res} = await this.$http.post('categories', this.addCateForm);
-        if(res.meta.status !== 201) {
-          return this.$message.error('添加分类失败');
+        if (!valid) return
+        const { data: res } = await this.$http.post('categories', this.addCateForm)
+        if (res.meta.status !== 201) {
+          return this.$message.error('添加分类失败')
         }
-        this.$message.success('添加分类成功');
-        this.getCateList();
-        this.addCateDialogVisible = false;
+        this.$message.success('添加分类成功')
+        this.getCateList()
+        this.addCateDialogVisible = false
       })
     },
     addCateDialogClosed() {
-      this.$refs.addCateFormRef.resetFields();
-      this.selectedKeys = [];
-      this.addCateForm.cat_level = 0;
-      this.addCateForm.cat_pid = 0;
+      this.$refs.addCateFormRef.resetFields()
+      this.selectedKeys = []
+      this.addCateForm.cat_level = 0
+      this.addCateForm.cat_pid = 0
     }
   }
 }

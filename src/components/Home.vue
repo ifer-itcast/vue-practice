@@ -57,8 +57,8 @@ export default {
     }
   },
   created() {
-    this.getMenuList();
-    this.activePath = window.sessionStorage.getItem('activePath');
+    this.getMenuList()
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout() {
@@ -67,17 +67,17 @@ export default {
     },
     // 获取菜单
     async getMenuList() {
-      const {data: res} = await this.$http.get('menus');
-      if(res.meta.status !== 200) return this.$message.error(res.meta.msg);
-      this.menuList = res.data;
+      const {data: res} = await this.$http.get('menus')
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.menuList = res.data
     },
     toggleCollapse() {
-      this.isCollapse = !this.isCollapse;
+      this.isCollapse = !this.isCollapse
     },
     // 保存侧边栏点击状态
     saveNavState(activePath) {
       window.sessionStorage.setItem('activePath',activePath);
-      this.activePath = activePath;
+      this.activePath = activePath
     }
   }
 }

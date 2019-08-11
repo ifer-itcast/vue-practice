@@ -89,20 +89,20 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err);
+      }).catch(err => err)
 
       if(confirmRes !== 'confirm') {
-        return this.$message.info('已取消删除');
+        return this.$message.info('已取消删除')
       }
-      const {data: res} = await this.$http.delete(`goods/${id}`)
-      if(res.meta.status !== 200) {
-       return this.$message.error('删除失败'); 
+      const { data: res } = await this.$http.delete(`goods/${id}`)
+      if (res.meta.status !== 200) {
+       return this.$message.error('删除失败')
       }
-      this.$message.success('删除成功');
-      this.getGoodsList();
+      this.$message.success('删除成功')
+      this.getGoodsList()
     },
     goAddpage() {
-      this.$router.push('/goods/add');
+      this.$router.push('/goods/add')
     }
   }
 }

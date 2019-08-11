@@ -274,8 +274,9 @@ export default {
       const { data: res } = await this.$http.get('users', {
         params: this.queryInfo
       })
-      if (res.meta.status !== 200)
+      if (res.meta.status !== 200) {
         return this.$message.error('获取用户列表失败')
+      }
       this.userList = res.data.users
       this.total = res.data.total
     },
@@ -391,24 +392,24 @@ export default {
     },
     async saveRoleInfo() {
       // error first
-      if(!this.selectedRoleId) {
-        return this.$message.error('请选择要分配的角色');
+      if (!this.selectedRoleId) {
+        return this.$message.error('请选择要分配的角色')
       }
-      const {data: res} = await this.$http.put(`users/${this.userInfo.id}/role`, {
+      const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, {
         rid: this.selectedRoleId
       })
 
-      if(res.meta.status !== 200) {
-        return this.$message.error('更新角色失败');
+      if (res.meta.status !== 200) {
+        return this.$message.error('更新角色失败')
       }
-      this.$message.success('更新角色成功！');
-      this.getUserList();
-      this.setRoleDialogVisible = false;
+      this.$message.success('更新角色成功！')
+      this.getUserList()
+      this.setRoleDialogVisible = false
     },
     setRoleDialogClosed() {
       // 关闭对话框时重置，防止下个哥们打开时有影响
-      this.selectedRoleId = '';
-      this.userInfo = {};
+      this.selectedRoleId = ''
+      this.userInfo = {}
     }
   }
 }

@@ -218,28 +218,28 @@ export default {
       }
     },
     handlePreview(file) {
-      this.previewPath = file.response.data.url;
-      this.previewVisible = true;
+      this.previewPath = file.response.data.url
+      this.previewVisible = true
     },
     handleRemove(file) {
       // 删除图片
-      const filePath = file.response.data.tmp_path;
-      const i = this.addForm.pics.findIndex(item => item.pic === filePath);
-      this.addForm.pics.splice(i, 1);
+      const filePath = file.response.data.tmp_path
+      const i = this.addForm.pics.findIndex(item => item.pic === filePath)
+      this.addForm.pics.splice(i, 1)
     },
     handleSuccess(response) {
       const picInfo = {
         pic: response.data.tmp_path
-      };
-      this.addForm.pics.push(picInfo);
+      }
+      this.addForm.pics.push(picInfo)
     },
     add() {
       this.$refs.addFormRef.validate(async valid => {
-        if(!valid) return this.$message.error('请填写必要的表单项目');
+        if (!valid) return this.$message.error('请填写必要的表单项目')
         // 不要修改 goods_cat，有地方需要 goods_cat 是数组
         // this.addForm.goods_cat = this.addForm.goods_cat.join(',')
 
-        const form = _.cloneDeep(this.addForm);
+        const form = _.cloneDeep(this.addForm)
         form.goods_cat = form.goods_cat.join(',')
 
         // 处理动态参数
@@ -247,7 +247,7 @@ export default {
           const newInfo = {
             attr_id: item.attr_id,
             attr_value: item.attr_vals.join(' ')
-          };
+          }
           this.addForm.attrs.push(newInfo)
         })
         // 处理静态属性
@@ -255,17 +255,17 @@ export default {
           const newInfo = {
             attr_id: item.attr_id,
             attr_value: item.attr_vals
-          };
-          this.addForm.attrs.push(newInfo);
+          }
+          this.addForm.attrs.push(newInfo)
         })
 
-        form.attrs = this.addForm.attrs;
+        form.attrs = this.addForm.attrs
 
-        const {data: res} = await this.$http.post('goods', form);
-        if(res.meta.status !== 201) {
-          return this.$message.error('添加商品失败');
+        const { data: res } = await this.$http.post('goods', form)
+        if (res.meta.status !== 201) {
+          return this.$message.error('添加商品失败')
         }
-        this.$message.success('添加商品成功');
+        this.$message.success('添加商品成功')
         this.$router.push('/goods')
       })
     }

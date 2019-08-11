@@ -163,7 +163,7 @@ export default {
             trigger: 'blur'
           }
         ]
-      },
+      }
     }
   },
   created() {
@@ -201,10 +201,10 @@ export default {
         return this.$message.error('获取参数列表失败')
       }
       res.data.forEach(item => {
-        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : [];
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : []
         // 控制当前编辑文本框的显示与隐藏
-        item.inputVisible = false;
-        item.inputValue = '';
+        item.inputVisible = false
+        item.inputValue = ''
       })
       if (this.activeName === 'many') {
         // 动态参数
@@ -214,106 +214,106 @@ export default {
       }
     },
     addDialogClosed() {
-      this.$refs.addFormRef.resetFields();
+      this.$refs.addFormRef.resetFields()
     },
     addParams() {
       this.$refs.addFormRef.validate(async valid => {
-        if(!valid) return;
-        const {data: res} = await this.$http.post(`categories/${this.cateId}/attributes`, {
+        if (!valid) return
+        const { data: res } = await this.$http.post(`categories/${this.cateId}/attributes`, {
           attr_name: this.addForm.attr_name,
           attr_sel: this.activeName
-        });
+        })
 
-        if(res.meta.status !== 201) {
-          return this.$message.error('添加参数失败');
+        if (res.meta.status !== 201) {
+          return this.$message.error('添加参数失败')
         }
-        this.$message.success('添加参数成功');
-        this.addDialogVisible = false;
-        this.getParamsData();
+        this.$message.success('添加参数成功')
+        this.addDialogVisible = false
+        this.getParamsData()
       })
     },
-    async showEditDialog(attr_id) {
-      const {data: res} = await this.$http.get(`categories/${this.cateId}/attributes/${attr_id}`, {
+    async showEditDialog(attrId) {
+      const { data: res } = await this.$http.get(`categories/${this.cateId}/attributes/${attrId}`, {
         params: {
           attr_sel: this.activeName
         }
-      });
-      if(res.meta.status !== 200) {
-        return this.$message.error('获取参数信息失败');
+      })
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取参数信息失败')
       }
-      this.editForm=res.data;
-      this.editDialogVisible = true;
+      this.editForm = res.data
+      this.editDialogVisible = true
     },
     eidtDialogClosed() {
-      this.$refs.editFormRef.resetFields();
+      this.$refs.editFormRef.resetFields()
     },
     editParams() {
       this.$refs.editFormRef.validate(async valid => {
-        if(!valid) return;
-        const {data: res} = await this.$http.put(`categories/${this.cateId}/attributes/${this.editForm.attr_id}`, {
+        if (!valid) return
+        const { data: res } = await this.$http.put(`categories/${this.cateId}/attributes/${this.editForm.attr_id}`, {
           attr_name: this.editForm.attr_name,
           attr_sel: this.activeName
-        });
+        })
 
-        if(res.meta.status !== 200) {
-          return this.$message.error('修改参数失败');
+        if (res.meta.status !== 200) {
+          return this.$message.error('修改参数失败')
         }
-        this.$message.success('修改参数成功');
-        this.getParamsData();
-        this.editDialogVisible = false;
+        this.$message.success('修改参数成功')
+        this.getParamsData()
+        this.editDialogVisible = false
       })
     },
-    async removeParams(attr_id) {
+    async removeParams(attrId) {
       const confirmRes = await this.$confirm('确认删除吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err);
-      if(confirmRes !== 'confirm') {
-        return this.$message.info('已取消删除');
+      }).catch(err => err)
+      if (confirmRes !== 'confirm') {
+        return this.$message.info('已取消删除')
       }
-      const {data: res} = await this.$http.delete(`categories/${this.cateId}/attributes/${attr_id}`);
-      if(res.meta.status !== 200) {
-        return this.$message.error('删除失败');
+      const { data: res } = await this.$http.delete(`categories/${this.cateId}/attributes/${attrId}`)
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除失败')
       }
-      this.$message.success('删除成功');
-      this.getParamsData();
+      this.$message.success('删除成功')
+      this.getParamsData()
     },
     async handleInputConfirm(row) {
-      if(row.inputValue.trim().length === 0) {
-        row.inputValue = '';
-        row.inputVisible = false;
-        return;
+      if (row.inputValue.trim().length === 0) {
+        row.inputValue = ''
+        row.inputVisible = false
+        return false
       }
       // 用户输入了真正的内容
-      row.attr_vals.push(row.inputValue.trim());
-      row.inputValue = '';
-      row.inputVisible = false;
+      row.attr_vals.push(row.inputValue.trim())
+      row.inputValue = ''
+      row.inputVisible = false
       // 把数据怼到数据库
-      this.saveAttrVals(row);
+      this.saveAttrVals(row)
     },
     // 将对 attr_vals 的操作保存到数据库，例如删除
     async saveAttrVals(row) {
-      const {data: res} = await this.$http.put(`categories/${this.cateId}/attributes/${row.attr_id}`, {
-        attr_name:row.attr_name,
+      const { data: res } = await this.$http.put(`categories/${this.cateId}/attributes/${row.attr_id}`, {
+        attr_name: row.attr_name,
         attr_sel: row.attr_sel,
         attr_vals: row.attr_vals.join(' ')
-      });
-      if(res.meta.status !== 200) {
-        return this.$message.error('修改参数失败');
+      })
+      if (res.meta.status !== 200) {
+        return this.$message.error('修改参数失败')
       }
-      this.$message.success('保存参数项成功');
+      this.$message.success('保存参数项成功')
     },
     showInput(row) {
-      row.inputVisible = true;
+      row.inputVisible = true
       // 自动获取焦点
       this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
     },
     handleClose(i, row) {
-      row.attr_vals.splice(i, 1);
-      this.saveAttrVals(row);
+      row.attr_vals.splice(i, 1)
+      this.saveAttrVals(row)
     }
   },
   computed: {
@@ -343,7 +343,6 @@ export default {
 }
 </script>
 
-
 <style lang="less" scoped>
 .cat_opt {
   margin: 15px 0;
@@ -355,5 +354,3 @@ export default {
   width: 120px;
 }
 </style>
-
-
